@@ -14,17 +14,12 @@ func WriteMsg(w io.Writer, msg proto.Message) error {
 		return err
 	}
 
-	lengthBuf := make([]byte, 4)
-	binary.BigEndian.PutUint32(lengthBuf, uint32(len(data)))
+	buf := make([]byte, 4+len(data))
+	binary.BigEndian.PutUint32(buf[:4], uint32(len(data)))
+	copy(buf[4:], data)
 
-	if _, err := w.Write(lengthBuf); err != nil {
-		return err
-	}
-	if _, err := w.Write(data); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = w.Write(buf)
+	return err
 }
 
 // [Writer] is a wrapper around an [io.Writer] that can write protobuf messages.
